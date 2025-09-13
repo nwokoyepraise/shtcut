@@ -19,27 +19,27 @@ import { useCurrentWorkSpace } from '@shtcut/hooks/current-workspace';
 import { usePermission } from '@shtcut/hooks/permissions';
 import { useRole } from '@shtcut/hooks/roles';
 import { RolesDataResponse } from '@shtcut/types/workspace';
-
-import { X } from 'lucide-react';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 type CreateRoleFormValues = z.infer<typeof createRoleSchema>;
 
-const CreateRole = ({ onClose, singleRole }: { onClose: () => void; singleRole: RolesDataResponse | null }) => {
+const CreateRole = ({
+    onClose,
+    singleRole,
+    handleRefreshRoles
+}: {
+    onClose: () => void;
+    handleRefreshRoles: () => void;
+    singleRole: RolesDataResponse | null;
+}) => {
     const currentWorkspace = useCurrentWorkSpace();
-    const {
-        createRole,
-        setLoadingState,
-        isLoadingState,
-        createRoleResponse,
-        updateRole,
-        updateRoleResponse,
-        findRoles
-    } = useRole({
-        callRoles: true
-    });
+    const { createRole, setLoadingState, isLoadingState, createRoleResponse, updateRole, updateRoleResponse } = useRole(
+        {
+            callRoles: true
+        }
+    );
     const { permissionsData, isLoading } = usePermission({ callPermissions: true });
     const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
 
@@ -93,8 +93,7 @@ const CreateRole = ({ onClose, singleRole }: { onClose: () => void; singleRole: 
                     description: successMessage
                 });
             }
-
-            findRoles();
+            handleRefreshRoles();
             onClose();
         } catch (error) {
             handleError({ error });
@@ -104,10 +103,9 @@ const CreateRole = ({ onClose, singleRole }: { onClose: () => void; singleRole: 
     };
 
     return (
-        <div className="px-4">
+        <div className="">
             <div className="flex items-center justify-between border-b pt-2 pb-4">
                 <h1 className="font-medium"> {singleRole ? '  Update Role' : '  Create Role'}</h1>
-                <X onClick={onClose} size={18} />
             </div>
             <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)}>

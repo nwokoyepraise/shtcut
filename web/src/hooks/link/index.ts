@@ -11,13 +11,18 @@ import {
     useDeleteLinkMutation,
     useDeleteManyLinksMutation,
     useLazyDuplicateLinkQuery,
-    useLazyFetchMetadataQuery,
+    useLazyFetchLinkMetadataQuery,
     useLazyFindAllLinksQuery,
+    useLazyGetLinkAnalyticsQuery,
     useLazyGetLinkQuery,
     useSubmitLinkPasswordMutation,
     useUpdateLinkMutation
 } from '@shtcut/services/link';
-import { FindAllLinkResresponseType, MetadataResponse } from '@shtcut/_shared/namespace/link';
+import {
+    FindAllLinkAnalyticsResresponseType,
+    FindAllLinkResresponseType,
+    MetadataResponse
+} from '@shtcut/_shared/namespace/link';
 import { debounce } from 'lodash';
 import { UsePaginationActions, UsePaginationState } from '@shtcut/types/pagination';
 
@@ -47,7 +52,7 @@ interface UseLinkReturnsType {
     submitPassword: MutationTrigger<any>;
     deleteManyLinks: MutationTrigger<any>;
     archivedManyLinks: MutationTrigger<any>;
-    fetchMetadata: Dict;
+    fetchLinkMetadata: any;
     findAllLinks: any;
     isLoading: boolean;
     findAllLinksResponse: FindAllLinkResresponseType | any;
@@ -69,6 +74,8 @@ interface UseLinkReturnsType {
     handleSearchChange: any;
     paginationActions: UsePaginationActions;
     params: LinkParams;
+    linkAnalyticsLoading: boolean;
+    linkAnalyticsData: FindAllLinkAnalyticsResresponseType;
 }
 
 export const useLink = (props: UseLinkProps): UseLinkReturnsType => {
@@ -83,7 +90,10 @@ export const useLink = (props: UseLinkProps): UseLinkReturnsType => {
     const [findAllLinks, { isLoading, data: findAllLinksResponse }] = useLazyFindAllLinksQuery();
     const [duplicate, duplicateLinkResponse] = useLazyDuplicateLinkQuery();
     const [getLink, getLinkResponse] = useLazyGetLinkQuery();
-    const [fetchMetadata, { data: fetchMetaDataResponse, isLoading: fetchMetaLoading }] = useLazyFetchMetadataQuery();
+    const [getLinkAnalytics, { data: linkAnalyticsData, isLoading: linkAnalyticsLoading }] =
+        useLazyGetLinkAnalyticsQuery();
+    const [fetchLinkMetadata, { data: fetchMetaDataResponse, isLoading: fetchMetaLoading }] =
+        useLazyFetchLinkMetadataQuery();
     const [debouncedSearch, setDebouncedSearch] = useState(search);
 
     const [loading, setLoading] = useState({
@@ -145,11 +155,20 @@ export const useLink = (props: UseLinkProps): UseLinkReturnsType => {
 
     useEffect(() => {
         if (url) {
-            fetchMetadata({
-                url
+            fetchLinkMetadata({
+                apiKey: 'ShtcutAppKey',
+                url: encodeURIComponent(url)
             });
         }
     }, [url]);
+
+    useEffect(() => {
+        if (id) {
+            getLinkAnalytics({
+                id
+            });
+        }
+    }, [id]);
 
     return {
         isLoading,
@@ -173,13 +192,14 @@ export const useLink = (props: UseLinkProps): UseLinkReturnsType => {
         isLoadingState,
         setLoadingState,
         handleSearchChange,
-        fetchMetadata,
+        fetchLinkMetadata,
         fetchMetaDataResponse,
         deleteManyLinksResponse,
         archivedManyLinksResponse,
         fetchMetaLoading,
         paginationActions,
-
+        linkAnalyticsLoading,
+        linkAnalyticsData,
         params
     };
 };

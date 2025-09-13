@@ -50,12 +50,9 @@ const QrCodeCard = ({ id, data, selectedIds, onChange, handleDeleteQrCodeLink, h
     const { action, state } = useQrCodeState();
     const { handleCopy } = useCopyToClipboard();
     const { urlScan } = useGeneralState();
-    console.log('urlScan', urlScan);
 
     const handleShowScan = (qrCodeData: QRCodeDataResponse) => {
         if (qrCodeData) {
-            console.log('qrCodeData', qrCodeData?.slug);
-
             const urlScanQrCode =
                 qrCodeData?.type === 'website' ? data?.url : `${NEXT_PUBLIC_URL}/qr-code/${qrCodeData?.slug}`;
             dispatch(setSelectedFrame(qrCodeData?.qrCode?.frame ?? 0));
@@ -88,10 +85,7 @@ const QrCodeCard = ({ id, data, selectedIds, onChange, handleDeleteQrCodeLink, h
 
     return (
         <section>
-            <Card
-                className=" cursor-pointer border border-gray-200 shadow-sm  rounded-[10px] p-4  "
-                onClick={handleNavigate}
-            >
+            <Card className=" cursor-pointer border border-gray-200 shadow-sm  rounded-[10px] p-4  ">
                 <div className="flex justify-between items-center">
                     <div className="flex gap-x-3">
                         <div className="relative top-1.5 checkbox-container" onClick={(e) => e.stopPropagation()}>
@@ -111,8 +105,8 @@ const QrCodeCard = ({ id, data, selectedIds, onChange, handleDeleteQrCodeLink, h
                                 ecLevel="H"
                                 fgColor={data?.qrCode?.colors?.presetColor}
                                 size={66}
-                                logoWidth={20}
-                                logoHeight={20}
+                                logoWidth={15}
+                                logoHeight={15}
                                 logoImage={data?.qrCode?.logo ?? ''}
                                 qrStyle={data?.qrCode?.qrStyle}
                                 eyeRadius={data?.qrCode?.eyeRadius as EyeRadiusType}
@@ -124,6 +118,11 @@ const QrCodeCard = ({ id, data, selectedIds, onChange, handleDeleteQrCodeLink, h
                                     {data?.title || data?.name} QR Code
                                 </h1>
                                 <p className="text-xs text-primary-0 font-normal">{data?.type}</p>
+                                {data?.type === 'multi-link' && (
+                                    <p>
+                                        {data?.links?.length} {data?.links?.length === 1 ? 'link' : 'links'}
+                                    </p>
+                                )}
                             </div>
                             <div className="flex items-center gap-x-2 mt-[6px]">
                                 <Calendar color="#2B2829" size={16} />
@@ -145,7 +144,7 @@ const QrCodeCard = ({ id, data, selectedIds, onChange, handleDeleteQrCodeLink, h
                 closeIcon={false}
                 isOpen={showModal}
                 onClose={handleCloseModal}
-                className={`  p-6  w-96 h-fit ${state?.selectedFrame === 3 && state?.logo ? 'pb-16' : state?.selectedFrame === 3 && !state.logo ? 'pb-0' : ''} `}
+                className={`  p-6  max-w-sm h-fit ${state?.selectedFrame === 3 && state?.logo ? 'pb-16' : state?.selectedFrame === 3 && !state.logo ? 'pb-0' : ''} `}
             >
                 <div className="flex justify-center flex-col items-center h-full ">
                     {state.logo && (
@@ -160,8 +159,20 @@ const QrCodeCard = ({ id, data, selectedIds, onChange, handleDeleteQrCodeLink, h
                     </section>
                     <section className={`my-5 relative w-full ${state?.selectedFrame === 3 ? 'mt-24' : ''}`}>
                         <Input
-                            value={urlScan.length > 35 ? `${urlScan.slice(0, 35)}...` : urlScan}
-                            defaultValue={urlScan.length > 35 ? `${urlScan.slice(0, 35)}...` : urlScan}
+                            value={
+                                typeof urlScan === 'string'
+                                    ? urlScan.length > 35
+                                        ? `${urlScan.slice(0, 35)}...`
+                                        : urlScan
+                                    : ''
+                            }
+                            defaultValue={
+                                typeof urlScan === 'string'
+                                    ? urlScan.length > 35
+                                        ? `${urlScan.slice(0, 35)}...`
+                                        : urlScan
+                                    : ''
+                            }
                             className="border border-gray-300 w-full"
                             disabled
                             maxLength={6}

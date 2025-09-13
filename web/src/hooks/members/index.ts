@@ -25,6 +25,7 @@ interface UseMembersReturnType {
     isLoadingState: boolean;
     setLoadingState: (key: 'creating' | 'updating' | 'deleting' | 'finding', value: boolean) => void;
     handleSearchChange: (newSearch: string) => void;
+    handleRefreshMembers: () => void;
 }
 
 export const useMembers = (props: UseMembersProps): UseMembersReturnType => {
@@ -47,6 +48,7 @@ export const useMembers = (props: UseMembersProps): UseMembersReturnType => {
         setLoading((prev) => ({ ...prev, [key]: value }));
     };
     const params = {
+        population: JSON.stringify([{ path: 'id' }]),
         ...pagination,
         search: debouncedSearch,
         ...filter
@@ -63,16 +65,20 @@ export const useMembers = (props: UseMembersProps): UseMembersReturnType => {
             setLoaded(true);
         }
     }, [callMembers, debouncedSearch, filter, findMembers, loaded]);
+
     const handleDeleteMember = (id: string) => {
         deleteMembers({ id });
     };
-    // useEffect(() => {
-    //     if (id) {
-    //         getRole({
-    //             id
-    //         });
-    //     }
-    // }, [id]);
+
+    const handleRefreshMembers = () => {
+        const updatedParams = {
+            population: JSON.stringify([{ path: 'id' }]),
+            ...pagination,
+            search: debouncedSearch,
+            ...filter
+        };
+        findMembers(updatedParams);
+    };
 
     return {
         isLoading,
@@ -86,6 +92,7 @@ export const useMembers = (props: UseMembersProps): UseMembersReturnType => {
         handleDeleteMember,
         isLoadingState,
         setLoadingState,
-        handleSearchChange
+        handleSearchChange,
+        handleRefreshMembers
     };
 };

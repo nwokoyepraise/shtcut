@@ -3,9 +3,14 @@ import { useAppDispatch } from '@shtcut/redux/store';
 import { useCreateMediaMutation } from '@shtcut/services/media';
 import { LinkBioDataType } from '@shtcut/types/link';
 import { useEffect, useState } from 'react';
+import { useAuth } from '../auth';
 
 export const useLinksManager = (defaultLinks: LinkBioDataType[] = []) => {
-    const [uploadFile, { isLoading, error, data }] = useCreateMediaMutation();
+    const { updateUser } = useAuth();
+    const [uploadFile] = useCreateMediaMutation();
+    const [isUploadingMainImage, setIsUploadingMainImage] = useState(false);
+    const [linkUploadingState, setLinkUploadingState] = useState<Record<number, boolean>>({});
+
     const dispatch = useAppDispatch();
     const [links, setLinks] = useState<LinkBioDataType[]>([{ id: 1, label: '', url: '', image: null }]);
     const initialShowSections = defaultLinks.reduce(
@@ -43,23 +48,42 @@ export const useLinksManager = (defaultLinks: LinkBioDataType[] = []) => {
         setLinks((prevLinks) => prevLinks.map((link) => (link.id === id ? { ...link, [field]: value } : link)));
     };
 
-    const handleLinkImageChange = (id: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleLinkImageChange = async (id: number, event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        console.log('file:::url', file);
         if (file) {
             const fileSizeInMB = file.size / (1024 * 1024);
             if (fileSizeInMB > 2) {
-                alert('Image size exceeds the allowed limit of 5 MB');
+                alert('Image size exceeds the allowed limit of 2 MB');
                 return;
             }
-            const reader = new FileReader();
-            reader.onload = () => {
-                const base64 = reader.result as string;
-                setLinks((prevLinks) => prevLinks.map((link) => (link.id === id ? { ...link, image: base64 } : link)));
-            };
-            reader.readAsDataURL(file);
+
+            const formData = new FormData();
+            formData.append('files', file);
+
+            setLinkUploadingState((prev) => ({ ...prev, [id]: true }));
+
+            try {
+                const response = await uploadFile(formData).unwrap();
+                setLinks((prevLinks) =>
+                    prevLinks.map((link) =>
+                        link.id === id
+                            ? {
+                                  ...link,
+                                  image: { id: response?.data?.[0]?.id, preview: response?.data?.[0]?.file?.url }
+                              }
+                            : link
+                    )
+                );
+                setLinkUploadingState((prev) => ({ ...prev, [id]: false }));
+            } catch (error) {
+                alert('Failed to upload image. Please try again.');
+
+                // Clear loading state even on error
+                setLinkUploadingState((prev) => ({ ...prev, [id]: false }));
+            }
         }
     };
+
     const toggleSection = (id: number) => {
         setShowSections((prev) => ({
             ...prev,
@@ -69,8 +93,6 @@ export const useLinksManager = (defaultLinks: LinkBioDataType[] = []) => {
 
     const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-
-        console.log('file', file);
         if (file) {
             const fileSizeInMB = file.size / (1024 * 1024);
             if (fileSizeInMB > 2) {
@@ -78,21 +100,45 @@ export const useLinksManager = (defaultLinks: LinkBioDataType[] = []) => {
                 return;
             }
             const formData = new FormData();
-            formData.append('file', file);
+            formData.append('files', file);
+            setIsUploadingMainImage(true);
             try {
                 const response = await uploadFile(formData).unwrap();
-                console.log('File upload response:', response);
-                // dispatch(setImage(response?.url));
+                dispatch(setImage({ id: response?.data?.[0]?.id, preview: response?.data?.[0]?.file?.url }));
             } catch (error) {
-                console.error('Upload failed:', error);
                 setImgError('Failed to upload image. Please try again.');
+            } finally {
+                setIsUploadingMainImage(false);
             }
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64Image = reader.result as string;
-                dispatch(setImage(base64Image));
-            };
-            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleAvatarImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const fileSizeInMB = file.size / (1024 * 1024);
+            if (fileSizeInMB > 2) {
+                setImgError('Image size exceeds the allowed limit of 2 MB');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('files', file);
+            setIsUploadingMainImage(true);
+            try {
+                const response = await uploadFile(formData).unwrap();
+                dispatch(setImage({ id: response?.data?.[0]?.id, preview: response?.data?.[0]?.file?.url }));
+                await updateUser({
+                    payload: { avatar: response?.data?.[0]?.id },
+                    options: {
+                        successMessage: 'Avatar updated successfully',
+                        errorMessage: 'Failed to update avatar'
+                    }
+                });
+            } catch (error) {
+                setImgError('Failed to upload image. Please try again.');
+            } finally {
+                setIsUploadingMainImage(false);
+            }
         }
     };
 
@@ -100,7 +146,9 @@ export const useLinksManager = (defaultLinks: LinkBioDataType[] = []) => {
         state: {
             links,
             showSections,
-            imgError
+            imgError,
+            isUploadingMainImage,
+            linkUploadingState
         },
         actions: {
             addLink,
@@ -108,7 +156,8 @@ export const useLinksManager = (defaultLinks: LinkBioDataType[] = []) => {
             updateLink,
             handleLinkImageChange,
             toggleSection,
-            handleImageChange
+            handleImageChange,
+            handleAvatarImageChange
         }
     };
 };

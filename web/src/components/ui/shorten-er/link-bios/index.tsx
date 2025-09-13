@@ -59,9 +59,6 @@ const LinkBiosComponent = ({
         });
     };
 
-    console.log('selectedLinkBio', selectedLinkBio);
-    console.log('type', modalType);
-
     const handleDeleteLinkBio = (id: string) => {
         linkBioActions.setLoadingState('deleting', true);
         linkBioActions.deleteLinkBio({
@@ -115,16 +112,14 @@ const LinkBiosComponent = ({
                                     <LinkBioCard
                                         data={data}
                                         handleShowDelete={() => handleShowModal('delete', data)}
-                                        handleNavigateAnalytics={() => handleNavigate(data?.slug)}
+                                        handleNavigateAnalytics={() => handleNavigate(data?._id)}
                                         handleShowQr={() => handleShowModal('qr', data)}
                                     />
                                 </div>
                             ))}
                     </div>
                 ) : (
-                    <div className="flex h-[60vh] justify-center items-center text-gray-500">
-                        No data available for {''}
-                    </div>
+                    <div className="flex h-[60vh] justify-center items-center text-gray-500">No data available</div>
                 )}
                 {emptyData && (
                     <section className="mt-6">
@@ -143,7 +138,7 @@ const LinkBiosComponent = ({
                         isLoadingState={linkBiosState.isLoadingState}
                         handleDelete={() => handleDeleteLinkBio(selectedLinkBio?._id || '')}
                         handleClose={handleCloseModal}
-                        description="Deleting this link-bio will redirect it to the shtcut erro page and can not be undone."
+                        description="Deleting this link-bio will redirect it to the shtcut error page and can not be undone."
                         title="link-bio"
                     />
                 )}
@@ -158,14 +153,14 @@ const LinkBiosComponent = ({
                         >
                             <QrCodeScan
                                 id={selectedLinkBio?._id}
-                                value={`https://beta.shtcut.co/link-bio/${selectedLinkBio?.slug}`}
+                                value={`https://shtcut.co/link-bio/${selectedLinkBio?.slug}`}
                             />
                         </div>
                         <section className="border border-gray-200 rounded-md h-9 w-full flex items-center justify-between px-3">
-                            <p className="truncate">{`https://beta.shtcut.co/link-bio/${selectedLinkBio?.slug}`}</p>
+                            <p className="truncate">{`https://shtcut.co/link-bio/${selectedLinkBio?.slug}`}</p>
                             <Copy
                                 size={16}
-                                onClick={() => handleCopy(`https://beta.shtcut.co/link-bio/${selectedLinkBio?.slug}`)}
+                                onClick={() => handleCopy(`https://shtcut.co/link-bio/${selectedLinkBio?.slug}`)}
                             />
                         </section>
                         <section className="mt-10 w-full">

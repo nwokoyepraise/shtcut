@@ -34,13 +34,16 @@ export class LinkBioService extends MongoBaseService {
       const user = req.user['_id'];
       const filter: FilterQuery<Hit> = { link: Utils.toObjectId(linkBioId), user: Utils.toObjectId(user) };
       const field = 'clicks';
+      const linkBio = await super.searchOneObject({ _id: linkBioId });
       const [plotData, weeklyChange, sourceDistribution] = await AnalyticsService.analytics(
         this.hitModel,
         options,
         filter,
         field,
       );
-      return { clicks: { summary: weeklyChange, sourceDistribution, plotData } };
-    } catch (e) {}
+      return { clicks: { summary: weeklyChange, sourceDistribution, plotData }, linkBio };
+    } catch (e) {
+      throw e;
+    }
   }
 }

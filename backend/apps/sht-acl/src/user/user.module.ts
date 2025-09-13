@@ -5,6 +5,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   Auth,
   AuthSchema,
+  Media,
+  MediaSchema,
   Role,
   RoleSchema,
   Subscription,
@@ -20,9 +22,10 @@ import {
     MongooseModule.forFeature([
       { name: Auth.name, schema: AuthSchema },
       { name: Role.name, schema: RoleSchema },
-      { name: User.name, schema: UserSchema },
+      { name: Media.name, schema: MediaSchema },
       { name: Workspace.name, schema: WorkspaceSchema },
       { name: Subscription.name, schema: SubscriptionSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [UserController],

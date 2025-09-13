@@ -9,7 +9,7 @@ import {
     UpdatePasswordRequestType,
     VerifyEmailRequestType
 } from './auth';
-import { ACL, POST } from '@shtcut/_shared/constant';
+import { ACL, POST, PUT } from '@shtcut/_shared/constant';
 
 export const authApi = api?.injectEndpoints({
     endpoints: (builder) => ({
@@ -35,13 +35,17 @@ export const authApi = api?.injectEndpoints({
                     body: payload
                 };
             },
-            async onQueryStarted() {
-                try {
-                    // todo dispatch to go get current logged user
-                } catch (e) {
-                    console.log('error::', e);
-                }
-            }
+            async onQueryStarted() {}
+        }),
+        updateUser: builder.mutation<AuthResponseType, SignUpRequestType>({
+            query: ({ payload }) => {
+                return {
+                    url: ACL.user,
+                    method: PUT,
+                    body: payload
+                };
+            },
+            async onQueryStarted() {}
         }),
         social: builder.mutation<AuthResponseType, SocialAuthRequestType>({
             query: ({ payload }) => {
@@ -108,5 +112,6 @@ export const {
     useSendVerificationMutation,
     useForgotPasswordMutation,
     useUpdatePasswordMutation,
-    useChangePasswordMutation
+    useChangePasswordMutation,
+    useUpdateUserMutation
 } = authApi;

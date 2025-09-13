@@ -107,9 +107,18 @@ export class QrCode {
   })
   link: any;
 
-  @Prop({
-    type: MG.Types.Mixed,
-  })
+  @Prop(
+    raw([
+      {
+        label: String,
+        url: String,
+        image: {
+          type: Types.ObjectId,
+          ref: 'Media',
+        },
+      },
+    ]),
+  )
   links: any;
 
   @Prop({
@@ -140,9 +149,10 @@ export class QrCode {
   url: string;
 
   @Prop({
-    type: String,
+    type: Types.ObjectId,
+    ref: 'Media',
   })
-  profileImage: string;
+  profileImage: any;
 
   @Prop({
     type: Object,
@@ -175,7 +185,8 @@ export class QrCode {
   deleted: boolean;
 
   @Prop({
-    type: String,
+    type: Types.ObjectId,
+    ref: 'Media',
   })
   file: string;
 }

@@ -8,14 +8,20 @@ export const getLinkQrCodeDataApi = api.injectEndpoints({
     endpoints: (builder) => ({
         getLinkBio: builder.query<ApiResponse<any | undefined>, QueryArgs & { slug: string }>({
             query: ({ slug }) => ({
-                url: `${SHTNER.linksBio}/search/one?slug=${slug}`
+                url: `${SHTNER.linksBio}/search/one?slug=${slug}`,
+                params: {
+                    population: JSON.stringify([{ path: 'profileImage' }, { path: 'links.image' }, { path: 'file' }])
+                }
             }),
             providesTags: [linkBio]
         }),
 
         getQRCodeLink: builder.query<ApiResponse<any | undefined>, QueryArgs & { slug: string }>({
             query: ({ slug }) => ({
-                url: `${SHTNER.qrCode}/search/one?slug=${slug}`
+                url: `${SHTNER.qrCode}/search/one?slug=${slug}`,
+                params: {
+                    population: JSON.stringify([{ path: 'profileImage' }, { path: 'links.image' }, { path: 'file' }])
+                }
             }),
             providesTags: [qrCodes]
         })

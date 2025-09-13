@@ -331,7 +331,8 @@ export const ACL = {
     tags: 'acl/tags',
     permissions: '/acl/permissions',
     invitation: 'acl/invitations',
-    roles: 'acl/roles'
+    roles: 'acl/roles',
+    user: 'acl/users/me'
 };
 
 export const SHTNER = {
@@ -712,7 +713,6 @@ const getDaySuffix = (day: number): string => {
 
 export const hexToRgba = (hex: string, alpha: number) => {
     if (!hex || !/^#?[0-9A-Fa-f]{6}$/.test(hex)) {
-        console.warn(`Invalid hex color: "${hex}". Using default color.`);
         return `rgba(0, 0, 0, ${alpha})`;
     }
 
@@ -732,3 +732,27 @@ export const capitalizeFirstLetter = (text: string): string => {
 export const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const phoneRegex = /^\+?\d{7,15}$/;
+
+export const getString = (value: string | string[] | undefined): string => {
+    if (Array.isArray(value)) return value[0] ?? '';
+    return value ?? '';
+};
+
+export const combineRefs =
+    (...refs: any[]) =>
+    (value: any) => {
+        refs.forEach((ref) => {
+            if (typeof ref === 'function') {
+                ref(value);
+            } else if (ref != null) {
+                ref.current = value;
+            }
+        });
+    };
+
+export const normalizeUrl = (url: string) => {
+    if (!/^https?:\/\//i.test(url)) {
+        return `https://${url}`;
+    }
+    return url;
+};
